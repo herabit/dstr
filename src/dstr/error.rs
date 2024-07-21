@@ -1,6 +1,5 @@
 use core::{fmt, str::Utf8Error};
 
-// A workaround so that I don't need to pull in `const-panic` or similar crates.
 macro_rules! msg {
     (NotNulTerminated) => {
         "input was not nul-terminated"
