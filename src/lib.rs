@@ -9,8 +9,16 @@ extern crate alloc;
 #[cfg(feature = "std")]
 extern crate std;
 
-pub(crate) mod dstr;
-pub(crate) mod util;
+pub(crate) mod mem;
+
+pub mod dstr;
 
 #[doc(inline)]
 pub use dstr::DStr;
+
+#[cfg(feature = "alloc")]
+pub mod dstring;
+
+#[cfg(feature = "alloc")]
+#[doc(inline)]
+pub use dstring::DString;

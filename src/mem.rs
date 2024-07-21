@@ -1,6 +1,6 @@
 use core::ffi::c_char;
 
-/// `const`-friendly memchr function.
+/// `const` friendly memchr function.
 #[inline(always)]
 #[no_mangle]
 pub const fn memchr(needle: u8, haystack: &[u8]) -> Option<usize> {
@@ -17,7 +17,7 @@ pub const fn memchr(needle: u8, haystack: &[u8]) -> Option<usize> {
     None
 }
 
-/// `const`-friendly strlen function.
+/// `const` friendly strlen function.
 ///
 /// # Safety
 ///
