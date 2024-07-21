@@ -10,6 +10,8 @@ use core::{
 mod error;
 pub use error::*;
 
+use crate::mem;
+
 /// A nul-terminated UTF-8 string.
 ///
 /// # Representation
@@ -268,7 +270,34 @@ impl DStr {
         unsafe { &*(string as *const str as *const DStr) }
     }
 
-    /// Create a [`DStr`] from a mutable nul-terminated string without
+    /// Try to create a [`DStr`] from a nul-terminated string.
+    #[must_use]
+    pub const fn try_from_str_with_nul(string: &str) -> Result<&DStr, FromStrError> {
+        match mem::memchr(0, string.as_bytes()) {
+            Some(nul_pos) if nul_pos + 1 == string.len() => {
+                Ok(unsafe { DStr::from_str_with_nul_unchecked(string) })
+            }
+            Some(nul_pos) => Err(FromStrError::InteriorNul(nul_pos)),
+            None => Err(FromStrError::NotNulTerminated),
+        }
+    }
+
+    /// Create a [`DStr`] from a nul-terminated string.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the string is not nul-terminated or contains interior nuls.
+    #[inline]
+    #[must_use]
+    #[track_caller]
+    pub const fn from_str_with_nul(string: &str) -> &DStr {
+        match DStr::try_from_str_with_nul(string) {
+            Ok(string) => string,
+            Err(err) => err._panic(),
+        }
+    }
+
+    /// Create a mutable [`DStr`] from a mutable nul-terminated string without
     /// doing any checks.
     ///
     /// # Safety
@@ -294,7 +323,7 @@ impl DStr {
         unsafe { &*(bytes as *const [u8] as *const DStr) }
     }
 
-    /// Create a [`DStr`] from a mutable nul-terminated UTF-8 byte slice without
+    /// Create a mutable [`DStr`] from a mutable nul-terminated UTF-8 byte slice without
     /// doing any checks.
     ///
     /// # Safety

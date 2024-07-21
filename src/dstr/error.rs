@@ -1,9 +1,23 @@
 use core::{fmt, str::Utf8Error};
 
-const NOT_NUL_TERMINATED: &str = "input was not nul-terminated";
-const INTERIOR_NUL: &str = "input contains an interior nul";
-const MISSING_NUL: &str = "input does not contain a nul";
-const INVALID_UTF8: &str = "input contains invalid utf-8";
+// A workaround so that I don't need to pull in `const-panic` or similar crates.
+macro_rules! msg {
+    (NotNulTerminated) => {
+        "input was not nul-terminated"
+    };
+    (InteriorNul) => {
+        "input contains an interior nul"
+    };
+    (MissingNul) => {
+        "input does not contain a nul"
+    };
+    (InvalidUtf8) => {
+        "input contains invalid utf-8"
+    };
+    ($($tt:tt)*) => {
+        compile_error!("unrecognized error message")
+    };
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FromStrError {
@@ -15,12 +29,17 @@ pub enum FromStrError {
 impl FromStrError {
     #[inline]
     #[must_use]
-    pub const fn message(&self) -> &'static str {
+    pub const fn message(self) -> &'static str {
         match self {
-            FromStrError::NotNulTerminated => NOT_NUL_TERMINATED,
-            FromStrError::InteriorNul(_) => INTERIOR_NUL,
-            FromStrError::MissingNul => MISSING_NUL,
+            FromStrError::NotNulTerminated => msg!(NotNulTerminated),
+            FromStrError::InteriorNul(_) => msg!(InteriorNul),
+            FromStrError::MissingNul => msg!(MissingNul),
         }
+    }
+
+    #[inline(always)]
+    pub(crate) const fn _panic<T>(self) -> T {
+        panic!("{}", self.message())
     }
 
     #[inline]
@@ -89,13 +108,18 @@ pub enum FromBytesError {
 impl FromBytesError {
     #[inline]
     #[must_use]
-    pub const fn message(&self) -> &'static str {
+    pub const fn message(self) -> &'static str {
         match self {
-            FromBytesError::NotNulTerminated => NOT_NUL_TERMINATED,
-            FromBytesError::InteriorNul(_) => INTERIOR_NUL,
-            FromBytesError::MissingNul => MISSING_NUL,
-            FromBytesError::InvalidUtf8(_) => INVALID_UTF8,
+            FromBytesError::NotNulTerminated => msg!(NotNulTerminated),
+            FromBytesError::InteriorNul(_) => msg!(InteriorNul),
+            FromBytesError::MissingNul => msg!(MissingNul),
+            FromBytesError::InvalidUtf8(_) => msg!(InvalidUtf8),
         }
+    }
+
+    #[inline(always)]
+    pub(crate) const fn _panic<T>(self) -> T {
+        panic!("{}", self.message())
     }
 }
 

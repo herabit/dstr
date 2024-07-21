@@ -1,4 +1,4 @@
-//! # DStr
+//! # Dumstr
 //!
 //! A small, dumb set of tools for UTF-8 null terminated strings.
 
